@@ -4,6 +4,7 @@ module ScikitLearn_
 export SVMClassifier, SVMRegressor
 export SVMNuClassifier, SVMNuRegressor
 export SVMLClassifier, SVMLRegressor
+export ElasticNet, ElasticNetCV
 
 #> for all Supervised models:
 import MLJBase
@@ -17,7 +18,6 @@ import ..ScikitLearn
 @sk_import svm: SVC
 @sk_import svm: NuSVC
 @sk_import svm: LinearSVC
-
 @sk_import svm: SVR
 @sk_import svm: NuSVR
 @sk_import svm: LinearSVR
@@ -25,13 +25,10 @@ import ..ScikitLearn
 
 """
     SVMClassifier(; kwargs...)
-
 C-Support Vector classifier from
 [https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC). Implemented hyperparameters as per
 package documentation cited above.
-
 See also, SVMNuClassifier, SVMLClassifier, SVMRegressor
-
 """
 mutable struct SVMClassifier <: MLJBase.Deterministic
     C::Float64
@@ -104,13 +101,10 @@ end
 
 """
     SVMNuClassifier(; kwargs...)
-
 NU-Support Vector classifier from
 [https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html#sklearn.svm.NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html#sklearn.svm.NuSVC). Implemented hyperparameters as per
 package documentation cited above.
-
 See also, SVMClassifier, SVMLClassifier, SVMNuRegressor
-
 """
 mutable struct SVMNuClassifier <: MLJBase.Deterministic
     nu::Float64
@@ -182,13 +176,10 @@ end
 
 """
     SVMLClassifier(; kwargs...)
-
 Linear-support Vector classifier from
 [https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC). Implemented hyperparameters as per
 package documentation cited above.
-
 See also, SVMClassifier, SVMNuClassifier, SVMLRegressor
-
 """
 
 mutable struct SVMLClassifier <: MLJBase.Deterministic
@@ -248,13 +239,10 @@ end
 
 """
     SVMRegressor(; kwargs...)
-
 Epsilon-Support Vector Regression from
 [https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR). Implemented hyperparameters as per
 package documentation cited above.
-
 See also, SVMClassifier, SVMNuRegressor, SVMLRegressor
-
 """
 mutable struct SVMRegressor <: MLJBase.Deterministic
     C::Float64
@@ -318,13 +306,10 @@ end
 
 """
     SVMNuRegressor(; kwargs...)
-
 Nu Support Vector Regression from
 [https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVR.html#sklearn.svm.NuSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVR.html#sklearn.svm.NuSVR). Implemented hyperparameters as per
 package documentation cited above.
-
 See also, SVMNuClassifier, SVMRegressor, SVMLRegressor
-
 """
 
 mutable struct SVMNuRegressor <: MLJBase.Deterministic
@@ -389,13 +374,10 @@ end
 
 """
     SVMLRegressor(; kwargs...)
-
 Linear Support Vector Regression from
 [https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVR.html#sklearn.svm.LinearSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVR.html#sklearn.svm.LinearSVR). Implemented hyperparameters as per
 package documentation cited above.
-
 See also, SVMRegressor, SVMNuRegressor, SVMLClassifier
-
 """
 
 mutable struct SVMLRegressor <: MLJBase.Deterministic
@@ -628,7 +610,8 @@ function MLJBase.predict(model::SVMR
 end
 
 
-# metadata:
+## METADATA
+
 MLJBase.load_path(::Type{<:SVMClassifier}) = "MLJModels.ScikitLearn_.SVMClassifier"
 MLJBase.load_path(::Type{<:SVMNuClassifier}) = "MLJModels.ScikitLearn_.SVMNuClassifier"
 MLJBase.load_path(::Type{<:SVMLClassifier}) = "MLJModels.ScikitLearn_.SVMLClassifier"
@@ -646,5 +629,282 @@ MLJBase.input_is_multivariate(::Type{<:SVM}) = true
 MLJBase.target_scitype_union(::Type{<:SVMC}) = MLJBase.Finite
 MLJBase.target_scitype_union(::Type{<:SVMR}) = MLJBase.Continuous
 MLJBase.input_is_multivariate(::Type{<:SVM}) = true
+
+
+################
+# LINEAR MODEL #
+################
+
+# to avoid name conflicts we use this instead of @sk_import:
+(ScikitLearn.Skcore).import_sklearn()
+ElasticNet_ =
+    (ScikitLearn.Skcore.pyimport)("sklearn.linear_model")[:ElasticNet]
+ElasticNetCV_ =
+    (ScikitLearn.Skcore.pyimport)("sklearn.linear_model")[:ElasticNetCV]
+ 
+
+## ELASTIC NET
+
+"""
+   ElasticNet(; kwargs...)
+ElasticNet from
+[https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html). Implemented hyperparameters as per
+package documentation cited above.
+
+"""
+mutable struct ElasticNet <: MLJBase.Deterministic
+    alpha::Float64
+    l1_ratio::Float64
+    fit_intercept::Bool
+    normalize::Bool
+    precompute::Bool
+    max_iter::Int
+    copy_X::Bool
+    tol::Float64
+    warm_start::Bool
+    positive::Bool
+    selection::String
+end
+
+# constructor:
+#> all arguments are kwargs with a default value
+function ElasticNet(
+    ;alpha=1.0
+    ,l1_ratio = 0.5
+    ,fit_intercept = true
+    ,normalize=false
+    ,precompute=false
+    ,max_iter=1000
+    ,copy_X=true
+    ,tol=0.0001
+    ,warm_start=false
+    ,positive=false
+    ,selection="cyclic")
+
+    model = ElasticNet(
+        alpha
+        , l1_ratio
+        , fit_intercept
+        , normalize
+        , precompute
+        , max_iter
+        , copy_X
+        , tol
+        , warm_start
+        , positive
+        , selection
+        )
+
+    message = MLJBase.clean!(model)       #> future proof by including these
+    isempty(message) || @warn message #> two lines even if no clean! defined below
+
+    return model
+end
+
+
+function MLJBase.clean!(model::ElasticNet)
+    warning = ""
+	if(model.alpha<0.0)
+		warning *="alpha must be stricly positive, set to 1"
+		model.alpha=1
+	end
+	if(model.l1_ratio!=nothing)
+		for (iter,val) in enumerate(model.l1_ratio)
+			if(!(0<val<=1))
+				warning *="l1 must be in (0,1], set to 1"
+				model.l1_ratio[iter]=1
+			end
+		end
+	end
+	return warning
+end
+
+
+function MLJBase.fit(model::ElasticNet
+             , verbosity::Int   #> must be here (and typed) even if not used (as here)
+             , X
+             , y)
+
+    Xmatrix = MLJBase.matrix(X)
+
+    cache = ElasticNet_(alpha=model.alpha,
+            l1_ratio=model.l1_ratio,
+            fit_intercept=model.fit_intercept,
+            normalize=model.normalize,
+            precompute=model.precompute,
+            max_iter=model.max_iter,
+	    copy_X=model.copy_X,
+            tol=model.tol,
+            warm_start=model.warm_start,
+            positive=model.positive )
+
+    result = ScikitLearn.fit!(cache,Xmatrix,y)
+    fitresult = result
+	report = NamedTuple{(:n_iter,:dual_gap)}((fitresult.n_iter_, fitresult.dual_gap_))
+    return fitresult, nothing, report
+
+end
+
+function MLJBase.fitted_params(model::ElasticNet, fitresult)
+	 return NamedTuple{(:intercept,:coef)}((fitresult.intercept_,fitresult.coef_))
+end
+
+
+function MLJBase.predict(model::ElasticNet
+                         , fitresult
+                         , Xnew)
+    xnew = MLJBase.matrix(Xnew)
+    prediction = ScikitLearn.predict(fitresult,xnew)
+    return prediction
+end
+
+
+## ELASTIC NET CV 
+
+"""
+   ElasticNetCV(; kwargs...)
+ElasticNetCV from
+[https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNetCV.html](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNetCV.html). Implemented hyperparameters as per
+package documentation cited above.
+
+"""
+mutable struct ElasticNetCV <: MLJBase.Deterministic
+    l1_ratio
+	eps::Float64
+	n_alphas::Int
+	alphas
+	fit_intercept::Bool
+	normalize::Bool
+	precompute
+	max_iter::Int
+	tol::Float64
+	cv
+	copy_X::Bool
+	positive::Bool
+	selection::String
+end
+
+# constructor:
+#> all arguments are kwargs with a default value
+function ElasticNetCV(
+    ;l1_ratio = 0.5
+	,eps=0.001
+	,n_alphas=100
+	,alphas=nothing
+    ,fit_intercept = true
+    ,normalize=false
+    ,precompute=false
+    ,max_iter=1000
+    ,tol=0.0001
+	,cv=nothing
+	,copy_X=true
+    ,positive=false
+    ,selection="cyclic")
+
+    model = ElasticNetCV(
+		l1_ratio
+		, eps
+		, n_alphas
+		, alphas
+		, fit_intercept
+		, normalize
+		, precompute
+		, max_iter
+		, tol
+		, cv
+		, copy_X
+		, positive
+		, selection
+        )
+
+    message = MLJBase.clean!(model)       #> future proof by including these
+    isempty(message) || @warn message #> two lines even if no clean! defined below
+
+    return model
+end
+
+
+function MLJBase.clean!(model::ElasticNetCV)
+    warning = ""
+	if(model.alphas!=nothing)
+		if(model.alphas<0.0)
+			warning *="alpha must be stricly positive, set to 1"
+			model.alphas=1
+		end
+	end
+	if(model.l1_ratio!=nothing)
+		for (iter,val) in enumerate(model.l1_ratio)
+			if(!(0<val<=1))
+				warning *="l1 must be in (0,1], set to 1"
+				model.l1_ratio[iter]=1
+			end
+		end
+	end
+	return warning
+end
+
+function MLJBase.fit(model::ElasticNetCV
+             , verbosity::Int   #> must be here (and typed) even if not used (as here)
+             , X
+             , y)
+
+    Xmatrix = MLJBase.matrix(X)
+
+    cache = ElasticNetCV_(l1_ratio=model.l1_ratio
+						, eps=model.eps
+						, n_alphas = model.n_alphas
+						, alphas = model.alphas
+						, fit_intercept = model.fit_intercept
+						, normalize = model.normalize
+						, precompute = model.precompute
+						, max_iter = model.max_iter
+						, tol = model.tol
+						, cv = model.cv
+						, copy_X = model.copy_X
+						, positive = model.positive
+						, selection = model.selection
+						)
+
+    result = ScikitLearn.fit!(cache,Xmatrix,y)
+    fitresult = result
+    report = NamedTuple{(:l1_ratio,:alpha,:n_iter,:dual_gap)}((fitresult.l1_ratio_,fitresult.alpha_,fitresult.n_iter_,fitresult.dual_gap_))
+
+    return fitresult, nothing, report
+
+end
+
+function MLJBase.fitted_params(model::ElasticNetCV, fitresult)
+	 return NamedTuple{(:intercept,:coef)}((fitresult.intercept_,fitresult.coef_))
+end
+
+function MLJBase.predict(model::ElasticNetCV
+                         , fitresult
+                         , Xnew)
+    xnew = MLJBase.matrix(Xnew)
+    prediction = ScikitLearn.predict(fitresult,xnew)
+    return prediction
+end
+
+
+## METATDATA
+
+MLJBase.load_path(::Type{<:ElasticNet}) = "MLJModels.ScikitLearn_.ElasticNet"
+MLJBase.package_name(::Type{<:ElasticNet}) = "ScikitLearn"
+MLJBase.package_uuid(::Type{<:ElasticNet}) = "3646fa90-6ef7-5e7e-9f22-8aca16db6324"
+MLJBase.is_pure_julia(::Type{<:ElasticNet}) = false
+MLJBase.package_url(::Type{<:ElasticNet}) = "https://github.com/cstjean/ScikitLearn.jl"
+MLJBase.input_scitype_union(::Type{<:ElasticNet}) = MLJBase.Continuous
+MLJBase.target_scitype_union(::Type{<:ElasticNet}) = MLJBase.Continuous
+MLJBase.input_is_multivariate(::Type{<:ElasticNet}) = true
+
+MLJBase.load_path(::Type{<:ElasticNetCV}) = "MLJModels.ScikitLearn_.ElasticNetCV"
+MLJBase.package_name(::Type{<:ElasticNetCV}) = "ScikitLearn"
+MLJBase.package_uuid(::Type{<:ElasticNetCV}) = "3646fa90-6ef7-5e7e-9f22-8aca16db6324"
+MLJBase.is_pure_julia(::Type{<:ElasticNetCV}) = false
+MLJBase.package_url(::Type{<:ElasticNetCV}) = "https://github.com/cstjean/ScikitLearn.jl"
+MLJBase.input_scitype_union(::Type{<:ElasticNetCV}) = MLJBase.Continuous
+MLJBase.target_scitype_union(::Type{<:ElasticNetCV}) = MLJBase.Continuous
+MLJBase.input_is_multivariate(::Type{<:ElasticNetCV}) = true
+
 
 end # module
