@@ -9,6 +9,7 @@ export KMeans
 export KMedoids
 
 import MLJBase
+using ScientificTypes
 
 import ..Clustering # strange sytax for lazy-loading
 
@@ -75,7 +76,7 @@ function MLJBase.transform(model::KMeans
     Xarray = MLJBase.matrix(X)
     (n, p), k = size(Xarray), model.k
     # pairwise distance from samples to centers
-    X̃ = pairwise(model.metric, transpose(Xarray), fitresult)
+    X̃ = pairwise(model.metric, transpose(Xarray), fitresult, dims=2)
     return MLJBase.table(X̃, prototype=X)
 end
 
@@ -97,7 +98,7 @@ function MLJBase.fit(model::KMedoids
 
     Xarray = MLJBase.matrix(X)
     # cost matrix: all the pairwise distances
-    Carray = pairwise(model.metric, transpose(Xarray)) # n x n
+    Carray = pairwise(model.metric, transpose(Xarray), dims=2) # n x n
 
     result    = C.kmedoids(Carray, model.k)
     fitresult = permutedims(view(Xarray, result.medoids, :)) # medoids (p x k)
@@ -117,7 +118,7 @@ function MLJBase.transform(model::KMedoids
     Xarray = MLJBase.matrix(X)
     (n, p), k = size(Xarray), model.k
     # pairwise distance from samples to medoids
-    X̃ = pairwise(model.metric, transpose(Xarray), fitresult)
+    X̃ = pairwise(model.metric, transpose(Xarray), fitresult, dims=2)
     return MLJBase.table(X̃, prototype=X)
 end
 
@@ -153,20 +154,16 @@ MLJBase.package_url(::Type{<:KMeans}) = "https://github.com/JuliaStats/Clusterin
 MLJBase.package_name(::Type{<:KMeans}) = "Clustering"
 MLJBase.package_uuid(::Type{<:KMeans}) = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 MLJBase.is_pure_julia(::Type{<:KMeans}) = true
-MLJBase.input_scitype_union(::Type{<:KMeans}) = MLJBase.Continuous
-MLJBase.input_is_multivariate(::Type{<:KMeans}) = true
-MLJBase.output_scitype_union(::Type{<:KMeans}) = MLJBase.Continuous
-MLJBase.output_is_multivariate(::Type{<:KMeans}) = true
+MLJBase.input_scitype(::Type{<:KMeans}) = Table(Continuous)
+MLJBase.output_scitype(::Type{<:KMeans}) = Table(Continuous)
 
 MLJBase.load_path(::Type{<:KMedoids}) = "MLJModels.Clustering_.KMedoids" # lazy-loaded from MLJ
 MLJBase.package_url(::Type{<:KMedoids}) = MLJBase.package_url(KMeans)
 MLJBase.package_name(::Type{<:KMedoids}) = MLJBase.package_name(KMeans)
 MLJBase.package_uuid(::Type{<:KMedoids}) = MLJBase.package_uuid(KMeans)
 MLJBase.is_pure_julia(::Type{<:KMedoids}) = true
-MLJBase.input_scitype_union(::Type{<:KMedoids}) = MLJBase.Continuous
-MLJBase.input_is_multivariate(::Type{<:KMedoids}) = true
-MLJBase.output_scitype_union(::Type{<:KMedoids}) = MLJBase.Continuous
-MLJBase.output_is_multivariate(::Type{<:KMedoids}) = true
+MLJBase.input_scitype(::Type{<:KMedoids}) = Table(Continuous)
+MLJBase.output_scitype(::Type{<:KMedoids}) = Table(Continuous)
+
 
 end # module
-
