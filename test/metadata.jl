@@ -11,11 +11,15 @@ pca = MLJModels.Handle("PCA", "MultivariateStats")
 cnst = MLJModels.Handle("ConstantRegressor", "MLJModels")
 i = MLJModels.info_given_handle(metadata_file)[pca]
 
+@testset "Handle constructors" begin
+    @test MLJModels.Handle("PCA") ==
+        MLJModels.Handle("PCA", "MultivariateStats")
+    # TODO: add tests here when duplicate model names enter registry
+end
 
 @testset "building INFO_GIVEN_HANDLE" begin
     @test isempty(MLJModels.localmodeltypes(MLJBase))
-    @test issubset(Set([KNNRegressor,                                
-                        MLJModels.Constant.DeterministicConstantClassifier,
+    @test issubset(Set([MLJModels.Constant.DeterministicConstantClassifier,
                         MLJModels.Constant.DeterministicConstantRegressor, 
                         ConstantClassifier,                          
                         ConstantRegressor,                           
@@ -23,9 +27,18 @@ i = MLJModels.info_given_handle(metadata_file)[pca]
                         OneHotEncoder,                               
                         Standardizer,                                
                         UnivariateBoxCoxTransformer,
-                        UnivariateStandardizer]), MLJModels.localmodeltypes(MLJModels))
+                        UnivariateStandardizer]),
+                   MLJModels.localmodeltypes(MLJModels))
     @test MLJModels.info_given_handle(metadata_file)[pca][:name] == "PCA"
-    @test MLJModels.info_given_handle(metadata_file)[cnst] == MLJBase.info_dict(ConstantRegressor)
+    d1 = MLJModels.info_given_handle(metadata_file)[cnst]
+    d2 = MLJBase.info_dict(ConstantRegressor)
+    for (k, v) in d1
+        if v isa Vector
+            @test Set(v) == Set(d2[k])
+        else
+            @test v == d2[k]
+        end
+    end
 end
 
 h = Vector{Any}(undef, 7)
@@ -54,11 +67,6 @@ end
 @testset "building NAMES" begin
     model_names = MLJModels.model_names(info_given_handle)
     @test Set(model_names) == Set(["1", "2", "3", "4", "5"])
-end
-
-@testset "Handle constructors" begin
-    @test MLJModels.Handle("PCA") == MLJModels.Handle("PCA", "MultivariateStats")
-    # TODO: add tests here when duplicate model names enter registry
 end
 
 end
