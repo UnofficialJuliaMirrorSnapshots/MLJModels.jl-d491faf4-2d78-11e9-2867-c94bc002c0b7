@@ -3,7 +3,9 @@ module MultivariateStats_
 export RidgeRegressor, PCA, KernelPCA, ICA
 
 import MLJBase
+import MLJBase: @mlj_model
 using ScientificTypes
+using Tables
 
 import ..MultivariateStats # lazy loading
 
@@ -13,8 +15,6 @@ struct LinearFitresult{F} <: MLJBase.MLJType
     coefficients::Vector{F}
     bias::F
 end
-
-import ..@mlj_model
 
 ####
 #### RIDGE
@@ -30,7 +30,7 @@ function MLJBase.fit(model::RidgeRegressor,
                      y)
 
     Xmatrix = MLJBase.matrix(X)
-    features = MLJBase.schema(X).names
+    features = Tables.schema(X).names
 
     weights = MS.ridge(Xmatrix, y, model.lambda)
 
