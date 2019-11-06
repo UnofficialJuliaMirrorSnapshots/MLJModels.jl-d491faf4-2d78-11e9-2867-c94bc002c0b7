@@ -55,10 +55,13 @@ Note that for some of these packages, the interface is incomplete; contributions
     * `DecisionTreeClassifier`, `DecisionTreeRegressor`
 * [GaussianProcesses.jl](https://github.com/STOR-i/GaussianProcesses.jl)
     * `GPClassifier`
-* [GLM.jl](https://github.com/STOR-i/GaussianProcesses.jl)
+* [GLM.jl](https://github.com/JuliaStats/GLM.jl)
     * `LinearRegressor`, `LinearBinaryClassifier`, `LinearCountRegressor`
 * [LIBSVM.jl](https://github.com/mpastell/LIBSVM.jl) (**note**: _these models are effectively duplicated by the sklearn models below_.)
     * `LinearSVC`, `SVC`, `NuSVC`, `NuSVR`, `EpsilonSVR`, `OneClassSVM`
+* [MLJLinearModels.jl](https://github.com/alan-turing-institute/MLJLinearModels.jl)
+    * `LinearRegressor`, `RidgeRegressor`, `LassoRegressor`, `ElasticNetRegressor`, `QuantileRegressor`, `HuberRegressor`, `RobustRegressor`, `LADRegressor` (all with optional elastic net regression)
+    * `LogisticClassifier`, `MultinomialClassifier` (with elastic net regularisation)
 * [MultivariateStats.jl](https://github.com/mpastell/LIBSVM.jl)
     * `RidgeRegressor`, `PCA`, `KernelPCA`, `ICA`, `LDA` (multiclass)
 * [NaiveBayes.jl](https://github.com/dfdx/NaiveBayes.jl)
@@ -70,6 +73,7 @@ Note that for some of these packages, the interface is incomplete; contributions
     * **Gaussian Processes**: `GaussianProcessRegressor`, `GaussianProcessClassifier`
     * **Ensemble**: `AdaBoostRegressor`, `AdaBoostClassifier`, `BaggingRegressor`, `BaggingClassifier`, `GradientBoostingRegressor`, `GradientBoostingClassifier`, `RandomForestRegressor`, `RandomForestClassifier`
     * **Naive Bayes**: `GaussianNB`, `MultinomialNB`, `ComplementNB`
+    * **Discriminant Analysis**, `BayesianLDA`, `BayesianQDA`
 * [XGBoost.jl](https://github.com/dmlc/XGBoost.jl)
     * `XGBoostRegressor`, `XGBoostClassifier`, `XGBoostCount`
 * [NearestNeighbors.jl](https://github.com/KristofferC/NearestNeighbors.jl)
